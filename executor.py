@@ -65,6 +65,8 @@ class Workflow:
 
 	def get_step_dependencies(self):
 		'''
+		Return a dict that the key is the step that depends on its value.
+		Also there are two more keys (main,final) that are the first and the final respectively
 		'''
 		step_dependencies={}
 		# Get all the dependenies of each step
@@ -77,7 +79,7 @@ class Workflow:
 		for dep in step_dependencies.values():
 			if dep not in step_dependencies.keys():
 				main_step =dep
-		# get the main step
+		# get the final step
 		for step in step_dependencies.keys():
 			if step not in step_dependencies.values():
 				final_step =step
@@ -85,8 +87,7 @@ class Workflow:
 		step_dependencies["main"]=main_step
 		step_dependencies["final"]=final_step
 
-		print(step_dependencies)
-		return []
+		return step_dependencies
 
 
 	def parse_workflow(self):
