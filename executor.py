@@ -61,7 +61,10 @@ class Workflow:
 		except KeyError:
 			print("Error 01: steps are not defined into the workflow.cwl")
 			return []
-
+	def get_step_path(self):
+		'''
+		Return a specific directory of the workflow
+		'''
 
 	def get_step_dependencies(self):
 		'''
@@ -84,27 +87,61 @@ class Workflow:
 			if step not in step_dependencies.values():
 				final_step =step
 		
-		step_dependencies["main"]=main_step
-		step_dependencies["final"]=final_step
+		step_dependencies[main_step]="main"
+		step_dependencies[final_step]="final"
 
 		return step_dependencies
 
+	def get_wf_info(self):
+		'''
+		'''
+		print("Workflow inputs: ")
+		print(self.wf_inputs)
+		print("Workflow outputs:")
+		print(self.wf_outputs)
+		print("Workflow dependencies: ")
+		print(self.step_dependencies)
+		print("\n")
+		print("Step paths:")
+		for step in self.step_dependencies:
+			print(self.get_wf_file_paths(step))
+		# print(self.wf_step_path)
+		print("\n")
+		# print(self.cwl_wf)
+
+	def is_cmd_tool(step):
+		'''
+		Checks if the step is a CommandLineTool
+		more info : https://www.commonwl.org/v1.0/CommandLineTool.html
+		'''
+		return True if step=="CommandLineTool" else False
+
+	def get_wf_file_paths(self,step):
+		'''
+		Returns the full file path of cwl steps file 
+		'''
+		return os.path.join(self.extracted_wf_path,self.cwl_wf["steps"][step]['run'])
+		# for step in self.step_dependencies:
+		# 	print(f"{step} : {self.step_dependencies[step]}")
+		# 	print(os.path.join(self.extracted_wf_path,self.cwl_wf["steps"][step]['run']))
+		# 	self.step_dependencies[step]["file_path"] = os.path.join(self.extracted_wf_path,self.cwl_wf["steps"][step]['run'])
 
 	def parse_workflow(self):
 		'''
 		'''
-		# print("test")
-		# print(self.extracted_wf_path)
+
 		# Open the file and load the file
 		if "workflow.cwl" in self.workflow_files:
 			workflow_file_path = os.path.join(self.extracted_wf_path,"workflow.cwl")
 		with open(workflow_file_path) as f:
 			self.cwl_wf = yaml.load(f, Loader=SafeLoader)
+		self.wf_inputs=self.cwl_wf["inputs"]
+		self.wf_outputs=self.cwl_wf["outputs"]
 		self.wf_steps = self.get_steps()
-		self.steps_dependencies = self.get_step_dependencies()
-		# for step in self.get_steps():
-		# 	self.get_step_dependencies()
-			# print(self.cwl_wf["steps"][step]["in"].keys())
+		self.step_dependencies = self.get_step_dependencies()
+		self.get_wf_info()
+
+
 
 
 if __name__ == '__main__':
@@ -131,4 +168,4 @@ if __name__ == '__main__':
 	print('Given inputs: \n\tworkflow_filename:{workflow_name} \n\toutput:{output}'.format(workflow_name=args.workflow_filename, output=args.output))
 	workflow = Workflow(compressed_workflow_path=args.workflow_filename)
 	# Delete the extracted workflow path
-	# shutil.rmtree(workflow.get_workflow_path())
+	shutil.rmtree(workflow.get_workflow_path())
