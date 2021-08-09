@@ -5,6 +5,7 @@ from yaml.loader import SafeLoader
 import tarfile
 import shutil
 import logging
+from ArgoExecutor import ArgoExecutor
 logging.basicConfig(level=logging.DEBUG)
 
 def log_info(message):
@@ -153,7 +154,7 @@ class Workflow:
 		self.wf_outputs=self.cwl_wf["outputs"]
 		self.wf_steps = self.get_steps()
 		self.step_dependencies = self.get_step_dependencies()
-		self.get_wf_info()
+		# self.get_wf_info()
 		self.parse_steps()
 		
 
@@ -183,4 +184,5 @@ if __name__ == '__main__':
 	print('Given inputs: \n\tworkflow_filename:{workflow_name} \n\toutput:{output}'.format(workflow_name=args.workflow_filename, output=args.output))
 	workflow = Workflow(compressed_workflow_path=args.workflow_filename)
 	# Delete the extracted workflow path
+	e = ArgoExecutor(workflow)
 	shutil.rmtree(workflow.get_workflow_path())
