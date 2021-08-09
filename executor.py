@@ -4,6 +4,14 @@ import yaml
 from yaml.loader import SafeLoader
 import tarfile
 import shutil
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
+def log_info(message):
+    '''
+    '''
+    logging.info(message)
+
 class CWL_ArgoParserException(Exception):
 	'''
 	Custom exception
@@ -92,23 +100,6 @@ class Workflow:
 
 		return step_dependencies
 
-	def get_wf_info(self):
-		'''
-		'''
-		print("Workflow inputs: ")
-		print(self.wf_inputs)
-		print("Workflow outputs:")
-		print(self.wf_outputs)
-		print("Workflow dependencies: ")
-		print(self.step_dependencies)
-		print("\n")
-		print("Step paths:")
-		for step in self.step_dependencies:
-			print(self.get_wf_file_paths(step))
-		# print(self.wf_step_path)
-		print("\n")
-		# print(self.cwl_wf)
-
 	def is_cmd_tool(step):
 		'''
 		Checks if the step is a CommandLineTool
@@ -116,7 +107,8 @@ class Workflow:
 		'''
 		return True if step=="CommandLineTool" else False
 
-	def get_wf_file_paths(self,step):
+
+	def get_wf_file_path(self,step):
 		'''
 		Returns the full file path of cwl steps file 
 		'''
@@ -125,6 +117,28 @@ class Workflow:
 		# 	print(f"{step} : {self.step_dependencies[step]}")
 		# 	print(os.path.join(self.extracted_wf_path,self.cwl_wf["steps"][step]['run']))
 		# 	self.step_dependencies[step]["file_path"] = os.path.join(self.extracted_wf_path,self.cwl_wf["steps"][step]['run'])
+
+	def parse_steps(self):
+		'''
+		'''
+		for step in self.step_dependencies:
+			with open(self.get_wf_file_path(step)) as f:
+				cwl_file_step = yaml.load(f, Loader=SafeLoader)
+			print(cwl_file_step)
+
+	def get_wf_info(self):
+		'''
+		'''
+		log_info("Workflow inputs: ")
+		log_info(self.wf_inputs)
+		log_info("Workflow outputs:")
+		log_info(self.wf_outputs)
+		log_info("Workflow dependencies: ")
+		log_info(self.step_dependencies)
+		log_info("Step paths:")
+		for step in self.step_dependencies:
+			log_info(self.get_wf_file_path(step))
+		# print(self.cwl_wf)
 
 	def parse_workflow(self):
 		'''
@@ -140,7 +154,8 @@ class Workflow:
 		self.wf_steps = self.get_steps()
 		self.step_dependencies = self.get_step_dependencies()
 		self.get_wf_info()
-
+		self.parse_steps()
+		
 
 
 
