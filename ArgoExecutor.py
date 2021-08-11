@@ -31,15 +31,15 @@ class ArgoExecutor(BaseExecutor):
 
     ARGO_ROOT = os.getcwd()
 
-    def yaml_workflow_builder(self,workflow_name,templates=None,tasks=None):
+    def yaml_workflow_builder(self,workflow_name):#,templates=None,tasks=None):
         '''
         A Funtion that return a dict with containing all necessary definitions
         of an argo workflow
         '''
-        if templates is None:
-            raise ExecutorException("Templates not found")
-        if task is None:
-            raise ExecutorException("Tasks not found")
+        # if templates is None:
+        #     raise ExecutorException("Templates not found")
+        # if task is None:
+        #     raise ExecutorException("Tasks not found")
             
         return {
             "apiVersion":"argoproj.io/v1alpa1",
@@ -47,10 +47,6 @@ class ArgoExecutor(BaseExecutor):
             "metadata": {"generateName":workflow_name},
             "spec": {
                 "entrypoint": f"DAG-{workflow_name}",   
-                "templates": [templates],
-                "dag":{
-                    "tasks":[tasks]
-                }
             }
         }
 
@@ -114,8 +110,24 @@ class ArgoExecutor(BaseExecutor):
         #     # print(self.workflow.get_step_dependencies()[dep])
         #     print(dep)
         # print(self.workflow.get_step_dependencies())
-        # print(self.workflow.get_wf_info())
+        print(self.workflow.get_wf_info())
+        # print(self.workflow.get_step_bash_contents(step,self.workflow.get_wf_bash_files(step)))
+        # print(self.workflow.parse_steps(step))
+        # argo_workflow= self.yaml_workflow_builder(workflow_name='test')
+        # argo_workflow['spec']['dag']={"test":"test"}
 
-        # print(self.workflow.get_step_bash_contents('OBC_CWL_INIT',self.workflow.get_wf_bash_files('OBC_CWL_INIT')))
-
+        # print(argo_workflow)
+        # yaml.dump(argo_workflow,sys.stdout)    
+        # print(self.workflow.wf_steps)
+        # for key,value in self.workflow.step_dependencies:
+            # print(key)
+            # if value == 'main':
+                
+            #     print("{key} is the first step".format(key=key))
+            # if value == 'final':
+            #     print("{key} it the final step". format(key=key))
+        for index,dep in enumerate(self.workflow.get_step_dependencies()):
+            step=dep[0]
+            next_step=dep[1]
+            print("{step}, {next_step}".format(step=step,next_step=next_step))
         return 0

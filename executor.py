@@ -80,25 +80,12 @@ class Workflow:
 		Return a dict that the key is the step that depends on its value.
 		Also there are two more keys (main,final) that are the first and the final respectively
 		'''
-		step_dependencies={}
+		step_dependencies=[]
 		# Get all the dependenies of each step
 		for step in self.wf_steps:
 			for dep in list(self.cwl_wf["steps"][step]["in"].keys()):
 				if dep in self.wf_steps:
-					step_dependencies[step]=dep
-					# print(f'Step : {step}, depends on: {dep}')
-		# get the main step
-		for dep in step_dependencies.values():
-			if dep not in step_dependencies.keys():
-				main_step =dep
-		# get the final step
-		for step in step_dependencies.keys():
-			if step not in step_dependencies.values():
-				final_step =step
-		
-		step_dependencies[main_step]="main"
-		step_dependencies[final_step]="final"
-
+					step_dependencies.append((dep,step))
 		return step_dependencies
 
 	def is_cmd_tool(self,step):
@@ -113,20 +100,18 @@ class Workflow:
 		'''
 		Returns the full file path of cwl steps file 
 		'''
+		print(step)
 		return os.path.join(self.extracted_wf_path,self.cwl_wf["steps"][step]['run'])
-		# for step in self.step_dependencies:
-		# 	print(f"{step} : {self.step_dependencies[step]}")
-		# 	print(os.path.join(self.extracted_wf_path,self.cwl_wf["steps"][step]['run']))
-		# 	self.step_dependencies[step]["file_path"] = os.path.join(self.extracted_wf_path,self.cwl_wf["steps"][step]['run'])
+	
 	def get_wf_bash_files(self,step):
 		'''
 		returns the list of files that a specific step contains 
 		TODO: In cwl we are able to pass multiple bash files 
 		check how we could get all the bash file from the listing arguement 
 		'''
-		list_of_files = self.parse_steps(step)['requirements']['InitialWorkDirRequirement']['listing']
+		list_of_files = self.parse_step(step)['requirements']['InitialWorkDirRequirement']['listing']
 		return list_of_files
-	def parse_steps(self,step):
+	def parse_step(self,step):
 		'''
 		'''
 		with open(self.get_wf_file_path(step)) as f:
@@ -143,9 +128,8 @@ class Workflow:
 		log_info(self.wf_outputs)
 		log_info("Workflow dependencies: ")
 		log_info(self.step_dependencies)
-		log_info("Step paths:")
-		for step in self.step_dependencies:
-			log_info(self.get_wf_file_path(step))
+		# for step in self.step_dependencies:
+			# log_info(self.get_wf_file_path(step))
 		# print(self.cwl_wf)
 
 	def get_step_bash_contents(self,step,step_files):
@@ -158,14 +142,14 @@ class Workflow:
 		Return a list that each line is a value of a list
 		'''
 		
-		if not self.is_cmd_tool(self.parse_steps(step)["class"]):
+		if not self.is_cmd_tool(self.parse_step(step)["class"]):
 			raise CWL_ArgoParserException("Step {step} is not contains bash file".format(step=step))
 		for step_file in step_files:
 			if step_file['class'] == 'File':
 				# print(os.path.join(self.extracted_wf_path,step_file['location']))
 				if os.path.exists(os.path.join(self.extracted_wf_path,step_file['location'])):
 					with open(os.path.join(self.extracted_wf_path,step_file['location']),'r') as f:
-						bash_content=f.readlines()
+						bash_content=f.read()
 		# else:
 			# raise CWL_ArgoParserException("File {step} does not extists".format(step=step))
 		# print(bash_content)
@@ -173,12 +157,14 @@ class Workflow:
 
 	def get_step_inputs(self,step):
 		'''
+		Return a dict that contain the inputs and their types of the cwl workflow
 		'''
-		return self.parse_steps(step)['inputs']
+		return self.parse_step(step)['inputs']
 	def get_step_outputs(self,step):
 		'''
+		Return a dict that contain the outputs and their types of the cwl workflow
 		'''
-		return self.parse_steps('OBC_CWL_INIT')['outputs']
+		return self.parse_step('OBC_CWL_INIT')['outputs']
 
 	def parse_workflow(self):
 		'''
@@ -193,8 +179,7 @@ class Workflow:
 		self.wf_steps = self.get_steps()
 		self.step_dependencies = self.get_step_dependencies()
 		# self.get_wf_info()
-		print(self.parse_steps('OBC_CWL_INIT'))
-		# self.get_step_bash_contents('OBC_CWL_INIT',self.get_wf_bash_files('OBC_CWL_INIT'))
+		# print(self.parse_step('OBC_CWL_INIT')['inputs'])
 
 
 
