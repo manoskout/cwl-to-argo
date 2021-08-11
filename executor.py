@@ -125,7 +125,7 @@ class Workflow:
 		for step in self.step_dependencies:
 			with open(self.get_wf_file_path(step)) as f:
 				cwl_file_step = yaml.load(f, Loader=SafeLoader)
-			print(cwl_file_step)
+			# print(cwl_file_step)
 
 	def get_wf_info(self):
 		'''
@@ -185,4 +185,5 @@ if __name__ == '__main__':
 	workflow = Workflow(compressed_workflow_path=args.workflow_filename)
 	# Delete the extracted workflow path
 	e = ArgoExecutor(workflow)
+	output= e.build()
 	shutil.rmtree(workflow.get_workflow_path())
