@@ -6,6 +6,8 @@ import tarfile
 import shutil
 import logging
 from ArgoExecutor import ArgoExecutor
+import networkx as nx
+from matplotlib import pyplot as plt 
 logging.basicConfig(level=logging.DEBUG)
 
 def log_info(message):
@@ -180,7 +182,14 @@ class Workflow:
 		self.step_dependencies = self.get_step_dependencies()
 		# self.get_wf_info()
 		# print(self.parse_step('OBC_CWL_INIT')['inputs'])
-
+	def dag_representation(self):
+		graph = nx.DiGraph()
+		graph.add_edges_from(self.get_step_dependencies())
+		plt.tight_layout()
+		nx.draw_networkx(graph, arrows=True)
+		plt.savefig("{workflow}.png".format(workflow="test"), format="PNG")
+		# tell matplotlib you're done with the plot: https://stackoverflow.com/questions/741877/how-do-i-tell-matplotlib-that-i-am-done-with-a-plot
+		plt.clf()
 
 
 if __name__ == '__main__':
@@ -203,13 +212,13 @@ if __name__ == '__main__':
 		default='workflow'
 		)
 	
-	parser.add_argument(
-		'-G', 
-		'--graph',
-		dest='graph', 
-		help="The graph of the workflow", 
-		default='graph'
-		)
+	# parser.add_argument(
+	# 	'-G', 
+	# 	'--graph',
+	# 	dest='graph', 
+	# 	help="The graph of the workflow", 
+	# 	default='graph'
+	# 	)
 	
 	args = parser.parse_args()
 	print('Given inputs: \n\tworkflow_filename:{workflow_name} \n\toutput:{output}'.format(workflow_name=args.workflow_filename, output=args.output))
@@ -217,5 +226,6 @@ if __name__ == '__main__':
 	# Delete the extracted workflow path
 	e = ArgoExecutor(workflow)
 	output= e.build()
+	workflow.dag_representation()
 	# print(output)
 	shutil.rmtree(workflow.get_workflow_path())

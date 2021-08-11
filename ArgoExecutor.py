@@ -106,27 +106,16 @@ class ArgoExecutor(BaseExecutor):
         '''
         Build an argo file according to the cwl workflow
         '''
-        # for dep in self.workflow.get_step_dependencies():
-        #     # print(self.workflow.get_step_dependencies()[dep])
-        #     print(dep)
-        # print(self.workflow.get_step_dependencies())
         print(self.workflow.get_wf_info())
         # print(self.workflow.get_step_bash_contents(step,self.workflow.get_wf_bash_files(step)))
         # print(self.workflow.parse_steps(step))
-        # argo_workflow= self.yaml_workflow_builder(workflow_name='test')
+        argo_workflow= self.yaml_workflow_builder(workflow_name='test')
         # argo_workflow['spec']['dag']={"test":"test"}
-
         # print(argo_workflow)
-        # yaml.dump(argo_workflow,sys.stdout)    
-        # print(self.workflow.wf_steps)
-        # for key,value in self.workflow.step_dependencies:
-            # print(key)
-            # if value == 'main':
-                
-            #     print("{key} is the first step".format(key=key))
-            # if value == 'final':
-            #     print("{key} it the final step". format(key=key))
-        for index,dep in enumerate(self.workflow.get_step_dependencies()):
+        yaml.dump(argo_workflow,sys.stdout)    
+       
+        for index,nodes in enumerate(self.workflow.get_step_dependencies()):
+            
             step=dep[0]
             next_step=dep[1]
             print("{step}, {next_step}".format(step=step,next_step=next_step))
