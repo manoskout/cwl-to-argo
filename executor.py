@@ -189,7 +189,7 @@ class Workflow:
 		nx.draw_networkx(graph, arrows=True)
 		plt.savefig("{workflow}.png".format(workflow="test"), format="PNG")
 		# tell matplotlib you're done with the plot: https://stackoverflow.com/questions/741877/how-do-i-tell-matplotlib-that-i-am-done-with-a-plot
-		plt.clf()
+		# plt.clf()
 
 
 if __name__ == '__main__':
@@ -226,6 +226,6 @@ if __name__ == '__main__':
 	# Delete the extracted workflow path
 	e = ArgoExecutor(workflow)
 	output= e.build()
-	workflow.dag_representation()
+	# workflow.dag_representation()
 	# print(output)
 	shutil.rmtree(workflow.get_workflow_path())

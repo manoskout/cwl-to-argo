@@ -115,8 +115,8 @@ class ArgoExecutor(BaseExecutor):
         yaml.dump(argo_workflow,sys.stdout)    
        
         for index,nodes in enumerate(self.workflow.get_step_dependencies()):
-            
-            step=dep[0]
-            next_step=dep[1]
+
+            step=nodes[0]
+            next_step=nodes[1]
             print("{step}, {next_step}".format(step=step,next_step=next_step))
         return 0
