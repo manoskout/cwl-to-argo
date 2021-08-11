@@ -203,6 +203,14 @@ if __name__ == '__main__':
 		default='workflow'
 		)
 	
+	parser.add_argument(
+		'-G', 
+		'--graph',
+		dest='graph', 
+		help="The graph of the workflow", 
+		default='graph'
+		)
+	
 	args = parser.parse_args()
 	print('Given inputs: \n\tworkflow_filename:{workflow_name} \n\toutput:{output}'.format(workflow_name=args.workflow_filename, output=args.output))
 	workflow = Workflow(compressed_workflow_path=args.workflow_filename)
