@@ -54,25 +54,54 @@ class ArgoExecutor(BaseExecutor):
             }
         }
 
-    def set_workflow_templates(self,id,bash,outputs):
+    def set_workflow_templates(self,name,params,bash,outputs):
+        '''
+        name: the name of the template
+        params: the parameters of the workflow (inputs)
+        bash: the bash file of the step
+        outputs: the output of the step
+        '''
         return {
-            "name":id,
+            "name":name,
+            "inputs":{
+                "parameters":params
+            },
             "script":{
                 "image": "debian:9.4",
                 "command":'[bash]', # Check how to show that [bash] in workflow rather than '[bash]'
                 "source": literal(bash),
             },
-            outputs: outputs
+            "outputs": outputs
         }
     
-    def set_task(self,name,source):
+    def set_task(self,name,template_name,dep,params):
+        '''
+        template_name: the name of the template that used in this specific step
+        dep: the dependencies of the step
+        set the current task and return a dict that will be parsed into yaml file
+        '''
+        #  - name: step-A 
+        # template: step-template-A
+        # arguments:
+        #   parameters:
+        #   - name: template-param-1
+        #     value: "{{workflow.parameters.workflow-param-1}}"
+
+        if dep==None:
+            return {
+            'name': name,
+            'template': template_name,
+            'arguments':{
+                'parameters':[params]
+            }
+        }
         return {
             'name': name,
-            'template': {
-                'image': 'debian:9.4', 
-                'command': "[bash]", 
-                'source':literal(source), 
-            }
+            'dependencies': dep,
+            'template': template_name,
+            'arguments':{
+                'parameters':[params]
+            } 
         }
 
 
@@ -81,5 +110,12 @@ class ArgoExecutor(BaseExecutor):
         '''
         Build an argo file according to the cwl workflow
         '''
-        print(self.workflow.get_wf_info())
+        # for dep in self.workflow.get_step_dependencies():
+        #     # print(self.workflow.get_step_dependencies()[dep])
+        #     print(dep)
+        # print(self.workflow.get_step_dependencies())
+        # print(self.workflow.get_wf_info())
+
+        # print(self.workflow.get_step_bash_contents('OBC_CWL_INIT',self.workflow.get_wf_bash_files('OBC_CWL_INIT')))
+
         return 0

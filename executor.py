@@ -101,7 +101,7 @@ class Workflow:
 
 		return step_dependencies
 
-	def is_cmd_tool(step):
+	def is_cmd_tool(self,step):
 		'''
 		Checks if the step is a CommandLineTool
 		more info : https://www.commonwl.org/v1.0/CommandLineTool.html
@@ -118,14 +118,21 @@ class Workflow:
 		# 	print(f"{step} : {self.step_dependencies[step]}")
 		# 	print(os.path.join(self.extracted_wf_path,self.cwl_wf["steps"][step]['run']))
 		# 	self.step_dependencies[step]["file_path"] = os.path.join(self.extracted_wf_path,self.cwl_wf["steps"][step]['run'])
-
-	def parse_steps(self):
+	def get_wf_bash_files(self,step):
+		'''
+		returns the list of files that a specific step contains 
+		TODO: In cwl we are able to pass multiple bash files 
+		check how we could get all the bash file from the listing arguement 
+		'''
+		list_of_files = self.parse_steps(step)['requirements']['InitialWorkDirRequirement']['listing']
+		return list_of_files
+	def parse_steps(self,step):
 		'''
 		'''
-		for step in self.step_dependencies:
-			with open(self.get_wf_file_path(step)) as f:
-				cwl_file_step = yaml.load(f, Loader=SafeLoader)
-			# print(cwl_file_step)
+		with open(self.get_wf_file_path(step)) as f:
+			cwl_file_step = yaml.load(f, Loader=SafeLoader)
+		# print(cwl_file_step)
+		return cwl_file_step
 
 	def get_wf_info(self):
 		'''
@@ -141,10 +148,41 @@ class Workflow:
 			log_info(self.get_wf_file_path(step))
 		# print(self.cwl_wf)
 
+	def get_step_bash_contents(self,step,step_files):
+		'''
+		step: a string which is a name of the step
+		step_files: a list of dicts that contains all files of a specific step
+		Get tha bash file to pass it into the argo yaml file
+		In our case we have just one file
+		TODO -> Check how we can work in multiple files in argo workflow !
+		Return a list that each line is a value of a list
+		'''
+		
+		if not self.is_cmd_tool(self.parse_steps(step)["class"]):
+			raise CWL_ArgoParserException("Step {step} is not contains bash file".format(step=step))
+		for step_file in step_files:
+			if step_file['class'] == 'File':
+				# print(os.path.join(self.extracted_wf_path,step_file['location']))
+				if os.path.exists(os.path.join(self.extracted_wf_path,step_file['location'])):
+					with open(os.path.join(self.extracted_wf_path,step_file['location']),'r') as f:
+						bash_content=f.readlines()
+		# else:
+			# raise CWL_ArgoParserException("File {step} does not extists".format(step=step))
+		# print(bash_content)
+		return bash_content
+
+	def get_step_inputs(self,step):
+		'''
+		'''
+		return self.parse_steps(step)['inputs']
+	def get_step_outputs(self,step):
+		'''
+		'''
+		return self.parse_steps('OBC_CWL_INIT')['outputs']
+
 	def parse_workflow(self):
 		'''
 		'''
-
 		# Open the file and load the file
 		if "workflow.cwl" in self.workflow_files:
 			workflow_file_path = os.path.join(self.extracted_wf_path,"workflow.cwl")
@@ -155,8 +193,8 @@ class Workflow:
 		self.wf_steps = self.get_steps()
 		self.step_dependencies = self.get_step_dependencies()
 		# self.get_wf_info()
-		self.parse_steps()
-		
+		print(self.parse_steps('OBC_CWL_INIT'))
+		# self.get_step_bash_contents('OBC_CWL_INIT',self.get_wf_bash_files('OBC_CWL_INIT'))
 
 
 
@@ -186,4 +224,5 @@ if __name__ == '__main__':
 	# Delete the extracted workflow path
 	e = ArgoExecutor(workflow)
 	output= e.build()
+	# print(output)
 	shutil.rmtree(workflow.get_workflow_path())
