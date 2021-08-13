@@ -39,7 +39,7 @@ def extract_file(file_path, temp_folder):
 class Workflow:
 	'''
 	'''
-	def __init__(self,compressed_workflow_path=None):
+	def __init__(self,compressed_workflow_path=None,input_yml=None):
 		'''
 		all related workflow files (i.e. steps, variables etc)
 		workflow_path: The tar.gz file that contains all of the workflow files
@@ -55,6 +55,7 @@ class Workflow:
 		self.compressed_workflow_path=compressed_workflow_path
 		self.extracted_wf_path=extracted_wf_path
 		self.workflow_files=list_of_files
+		self.input_yml=input_yml
 		self.parse_workflow()
 
 	def get_workflow_path(self):
@@ -125,9 +126,9 @@ class Workflow:
 		'''
 		'''
 		log_info("Workflow inputs: ")
-		log_info(self.wf_inputs)
+		# log_info(self.wf_inputs)
 		log_info("Workflow outputs:")
-		log_info(self.wf_outputs)
+		# log_info(self.wf_outputs)
 		log_info("Workflow dependencies: ")
 		log_info(self.step_dependencies)
 		# for step in self.step_dependencies:
@@ -168,6 +169,23 @@ class Workflow:
 		'''
 		return self.parse_step('OBC_CWL_INIT')['outputs']
 
+	def get_wf_input_paths(self):
+		'''
+		Returns the folders that contains all the inputs-outputs of the workflow 
+		On the grounds that these variables are not defined as a temporal solution
+		the return value is hardcoded
+		'''
+		# print(self.input_yml)
+		# with open(self.get_wf_file_path(os.path.join(self.extracted_wf_path,self.input_yml))) as f:
+			# input_file = yaml.load(f, Loader=SafeLoader)
+		# print(input_file)
+		# return input_file
+		return {
+		"OBC_TOOL_PATH": "/tmp",
+		"OBC_DATA_PATH": "/tmp",
+		"OBC_WORK_PATH": "/tmp"
+		}
+
 	def parse_workflow(self):
 		'''
 		'''
@@ -176,12 +194,14 @@ class Workflow:
 			workflow_file_path = os.path.join(self.extracted_wf_path,"workflow.cwl")
 		with open(workflow_file_path) as f:
 			self.cwl_wf = yaml.load(f, Loader=SafeLoader)
-		self.wf_inputs=self.cwl_wf["inputs"]
-		self.wf_outputs=self.cwl_wf["outputs"]
+		# self.wf_inputs=self.cwl_wf["inputs"]
+		# self.wf_outputs=self.cwl_wf["outputs"]
 		self.wf_steps = self.get_steps()
 		self.step_dependencies = self.get_step_dependencies()
 		# self.get_wf_info()
 		# print(self.parse_step('OBC_CWL_INIT')['inputs'])
+		print(self.get_wf_input_paths())
+	
 	def dag_representation(self):
 		graph = nx.DiGraph()
 		graph.add_edges_from(self.get_step_dependencies())
@@ -205,6 +225,13 @@ if __name__ == '__main__':
 		)
 
 	parser.add_argument(
+		'-I', 
+		'--inputs', 
+		dest='input_file', 
+		help='CWL inputs file name', 
+		required=True
+		)
+	parser.add_argument(
 		'-O', 
 		'--output',
 		dest='output', 
@@ -222,7 +249,7 @@ if __name__ == '__main__':
 	
 	args = parser.parse_args()
 	print('Given inputs: \n\tworkflow_filename:{workflow_name} \n\toutput:{output}'.format(workflow_name=args.workflow_filename, output=args.output))
-	workflow = Workflow(compressed_workflow_path=args.workflow_filename)
+	workflow = Workflow(compressed_workflow_path=args.workflow_filename, input_yml=args.input_file)
 	# Delete the extracted workflow path
 	e = ArgoExecutor(workflow)
 	output= e.build()

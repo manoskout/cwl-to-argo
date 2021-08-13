@@ -112,11 +112,14 @@ class ArgoExecutor(BaseExecutor):
         argo_workflow= self.yaml_workflow_builder(workflow_name='test')
         # argo_workflow['spec']['dag']={"test":"test"}
         # print(argo_workflow)
-        yaml.dump(argo_workflow,sys.stdout)    
-       
+        argo_workflow['spec']['templates']=[]
         for index,nodes in enumerate(self.workflow.get_step_dependencies()):
-
             step=nodes[0]
             next_step=nodes[1]
-            print("{step}, {next_step}".format(step=step,next_step=next_step))
+            bash_content=self.workflow.get_step_bash_contents(step,self.workflow.get_wf_bash_files(step))
+            argo_workflow['spec']['templates'].append(self.set_workflow_templates(step,"params",bash_content,"outputs"))
+
+            # print(self.workflow.get_step_bash_contents(step,self.workflow.get_wf_bash_files(step)))
+            # print("{step}, {next_step}".format(step=step,next_step=next_step))
+        # yaml.dump(argo_workflow,sys.stdout)    
         return 0
