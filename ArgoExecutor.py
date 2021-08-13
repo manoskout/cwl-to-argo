@@ -101,7 +101,15 @@ class ArgoExecutor(BaseExecutor):
         }
 
 
-
+    def set_dag(self,name):
+        '''
+        '''
+        return {
+            'name':name,
+            'dag':{
+                'tasks':[]
+            }
+        }
     def build(self, workflow_id=None):
         '''
         Build an argo file according to the cwl workflow
@@ -120,8 +128,15 @@ class ArgoExecutor(BaseExecutor):
             step=nodes[1]
             bash_content=self.workflow.get_step_bash_contents(step,self.workflow.get_wf_bash_files(step))
             argo_workflow['spec']['templates'].append(self.set_workflow_templates(step,"params","bash_content","outputs"))
-            # print(self.workflow.get_step_bash_contents(step,self.workflow.get_wf_bash_files(step)))
-            # print("{step}, {next_step}".format(step=step,next_step=next_step))
+        argo_workflow['spec']['templates'].append(self.set_dag("name"))
         yaml.dump(argo_workflow,sys.stdout)  
-        
+        for index,nodes in enumerate(self.workflow.get_step_generator()):
+            # Looks like hardcoded 
+            # TODO -> change the way of how to append tasks into a workflow
+            dep=nodes[0]
+            step=nodes[1]
+            argo_workflow['spec']['templates'][-1]['dag']['tasks'].append(self.set_task("name", "template_name", "dep", "params"))
+            # print(argo_workflow['spec']['templates'][-1]['dag'])
+        yaml.dump(argo_workflow,sys.stdout)  
+
         return 0
