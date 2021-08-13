@@ -111,14 +111,17 @@ class ArgoExecutor(BaseExecutor):
         # Both of the template and tasks are passed as a list 
         argo_workflow['spec']['templates']=[] # To push the template of each step
         # argo_workflow['spec']['dag']['tasks']=[] # To add the steps into the yaml file
+        root=self.workflow.get_step_generator().__next__()[0]
+        bash_content=self.workflow.get_step_bash_contents(root,self.workflow.get_wf_bash_files(root))
+        argo_workflow['spec']['templates'].append(self.set_workflow_templates(root,"params","bash_content","outputs"))
+
         for index,nodes in enumerate(self.workflow.get_step_generator()):
-            step=nodes[0]
-            next_step=nodes[1]
+            dep=nodes[0]
+            step=nodes[1]
             bash_content=self.workflow.get_step_bash_contents(step,self.workflow.get_wf_bash_files(step))
             argo_workflow['spec']['templates'].append(self.set_workflow_templates(step,"params","bash_content","outputs"))
-            last_step=nodes
             # print(self.workflow.get_step_bash_contents(step,self.workflow.get_wf_bash_files(step)))
             # print("{step}, {next_step}".format(step=step,next_step=next_step))
-        yaml.dump(argo_workflow,sys.stdout)   
-        # print(self.workflow.get_step_generator()) 
+        yaml.dump(argo_workflow,sys.stdout)  
+        
         return 0

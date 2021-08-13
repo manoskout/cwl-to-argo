@@ -101,7 +101,7 @@ class Workflow:
 		'''
 		Returns the full file path of cwl steps file 
 		'''
-		print(step)
+		# print(step)
 		return os.path.join(self.extracted_wf_path,self.cwl_wf["steps"][step]['run'])
 	
 	def get_wf_bash_files(self,step):
@@ -198,7 +198,7 @@ class Workflow:
 		self.step_dependencies = self.get_step_generator()
 		# self.get_wf_info()
 		# print(self.parse_step('OBC_CWL_INIT')['inputs'])
-		print(self.get_wf_input_paths())
+		# print(self.get_wf_input_paths())
 	
 	def dag_representation(self):
 		'''
