@@ -78,18 +78,16 @@ class Workflow:
 		Return a specific directory of the workflow
 		'''
 
-	def get_step_dependencies(self):
+	def get_step_generator(self):
 		'''
 		Return a dict that the key is the step that depends on its value.
 		Also there are two more keys (main,final) that are the first and the final respectively
 		'''
-		step_dependencies=[]
 		# Get all the dependenies of each step
 		for step in self.wf_steps:
 			for dep in list(self.cwl_wf["steps"][step]["in"].keys()):
 				if dep in self.wf_steps:
-					step_dependencies.append((dep,step))
-		return step_dependencies
+					yield (dep,step)
 
 	def is_cmd_tool(self,step):
 		'''
@@ -197,14 +195,16 @@ class Workflow:
 		# self.wf_inputs=self.cwl_wf["inputs"]
 		# self.wf_outputs=self.cwl_wf["outputs"]
 		self.wf_steps = self.get_steps()
-		self.step_dependencies = self.get_step_dependencies()
+		self.step_dependencies = self.get_step_generator()
 		# self.get_wf_info()
 		# print(self.parse_step('OBC_CWL_INIT')['inputs'])
 		print(self.get_wf_input_paths())
 	
 	def dag_representation(self):
+		'''
+		'''
 		graph = nx.DiGraph()
-		graph.add_edges_from(self.get_step_dependencies())
+		graph.add_edges_from(self.get_step_generator())
 		plt.tight_layout()
 		nx.draw_networkx(graph, arrows=True)
 		plt.savefig("{workflow}.png".format(workflow="test"), format="PNG")

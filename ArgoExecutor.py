@@ -107,19 +107,18 @@ class ArgoExecutor(BaseExecutor):
         Build an argo file according to the cwl workflow
         '''
         print(self.workflow.get_wf_info())
-        # print(self.workflow.get_step_bash_contents(step,self.workflow.get_wf_bash_files(step)))
-        # print(self.workflow.parse_steps(step))
         argo_workflow= self.yaml_workflow_builder(workflow_name='test')
-        # argo_workflow['spec']['dag']={"test":"test"}
-        # print(argo_workflow)
-        argo_workflow['spec']['templates']=[]
-        for index,nodes in enumerate(self.workflow.get_step_dependencies()):
+        # Both of the template and tasks are passed as a list 
+        argo_workflow['spec']['templates']=[] # To push the template of each step
+        # argo_workflow['spec']['dag']['tasks']=[] # To add the steps into the yaml file
+        for index,nodes in enumerate(self.workflow.get_step_generator()):
             step=nodes[0]
             next_step=nodes[1]
             bash_content=self.workflow.get_step_bash_contents(step,self.workflow.get_wf_bash_files(step))
-            argo_workflow['spec']['templates'].append(self.set_workflow_templates(step,"params",bash_content,"outputs"))
-
+            argo_workflow['spec']['templates'].append(self.set_workflow_templates(step,"params","bash_content","outputs"))
+            last_step=nodes
             # print(self.workflow.get_step_bash_contents(step,self.workflow.get_wf_bash_files(step)))
             # print("{step}, {next_step}".format(step=step,next_step=next_step))
-        # yaml.dump(argo_workflow,sys.stdout)    
+        yaml.dump(argo_workflow,sys.stdout)   
+        # print(self.workflow.get_step_generator()) 
         return 0
