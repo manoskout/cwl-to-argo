@@ -46,7 +46,7 @@ class Workflow:
 		wf_inputs: the file that contains all the inputs of the workflow
 		'''
 		if os.path.exists(compressed_workflow_path):
-			print("File found")
+			# print("File found")
 			list_of_files, extracted_wf_path = extract_file(compressed_workflow_path, "tmp_folder")
 			# print(list_of_files, extracted_wf_path)
 		else:
@@ -248,7 +248,7 @@ if __name__ == '__main__':
 	# 	)
 	
 	args = parser.parse_args()
-	print('Given inputs: \n\tworkflow_filename:{workflow_name} \n\toutput:{output}'.format(workflow_name=args.workflow_filename, output=args.output))
+	# print('Given inputs: \n\tworkflow_filename:{workflow_name} \n\toutput:{output}'.format(workflow_name=args.workflow_filename, output=args.output))
 	workflow = Workflow(compressed_workflow_path=args.workflow_filename, input_yml=args.input_file)
 	# Delete the extracted workflow path
 	e = ArgoExecutor(workflow)
